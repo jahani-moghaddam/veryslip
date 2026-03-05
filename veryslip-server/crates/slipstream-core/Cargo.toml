@@ -1,0 +1,20 @@
+[package]
+name = "slipstream-core"
+version = "0.1.0"
+edition = "2021"
+description = "Core utilities for Slipstream"
+license = "Apache-2.0"
+repository = "https://github.com/Mygod/slipstream-rust"
+readme = "../../README.md"
+
+[dependencies]
+libc = "0.2"
+socket2 = "0.6"
+tokio = { version = "1.37", features = ["net"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[features]
+default = []
+invariant-panic = []
+test-support = []

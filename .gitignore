@@ -1,0 +1,133 @@
+# Rust build artifacts
+target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# Debug files
+debug/
+*.dSYM/
+
+# Binaries
+veryslip-client
+veryslip-server
+slipstream-server
+slipstream-client
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test artifacts
+*.profraw
+*.profdata
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Kiro specs (internal development)
+.kiro/
+
+# Build logs
+*.log
+/tmp/
+*.tmp
+
+# Cache directories
+.cache/
+cache/
+
+# SQLite databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.cert
+certs/
+
+# Configuration files with secrets
+config.toml
+*.secret
+*.env
+
+# OS files
+Thumbs.db
+desktop.ini
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Compiled Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects
+*.so.*
+
+# Executables
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Package files
+*.deb
+*.rpm
+*.tar.gz
+*.zip
+
+# Documentation build artifacts
+book/
+docs/_build/
+
+# Temporary files
+.#*
+\#*#
+
+# slipstream-rust-main (upstream source)
+slipstream-rust-main/
+
+# Deployment artifacts
+/opt/
+/etc/veryslip-server/
+
+# Docker build artifacts
+*.tar
+docker-build/
+
+# Patches (already applied)
+patches/
+
+# Old deployment scripts
+slipstream-rust-deploy.sh
+veryslip-deploy.sh
+
+# Build scripts for specific architectures
+build-docker.sh
+Dockerfile.*

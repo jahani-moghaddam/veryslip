@@ -1,0 +1,43 @@
+# Very Slip Client Configuration - DoH Example
+# This example shows how to enable DNS-over-HTTPS
+
+domains = ["s1.example.com"]
+resolvers = ["8.8.8.8:53"]  # Used as fallback if DoH fails
+
+[proxy]
+port = 8080
+auth_enabled = false
+
+[doh]
+# Enable DNS-over-HTTPS for enhanced privacy
+enabled = true
+
+# DoH endpoints (round-robin load balancing)
+# Uncomment your preferred provider(s):
+endpoints = [
+    "https://cloudflare-dns.com/dns-query",      # Cloudflare (default)
+    # "https://dns.google/dns-query",            # Google
+    # "https://dns.quad9.net/dns-query",         # Quad9
+    # "https://doh.opendns.com/dns-query",       # OpenDNS
+]
+
+# Query timeout in seconds
+timeout_secs = 5
+
+# Use GET method instead of POST (RFC 8484)
+# POST is recommended for better privacy
+use_get_method = false
+
+[compression]
+enabled = true
+level = 3
+
+[cache]
+enabled = true
+max_memory_size = 524288000
+
+[query]
+concurrency = 8
+max_in_flight = 1000
+
+# Other sections use defaults...

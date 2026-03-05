@@ -1,0 +1,45 @@
+# Default blocklist - subset of EasyList + EasyPrivacy
+# Advertisements
+doubleclick.net
+googlesyndication.com
+googleadservices.com
+*.adservice.google.com
+ads.yahoo.com
+advertising.com
+adnxs.com
+adsrvr.org
+criteo.com
+outbrain.com
+taboola.com
+*.ads.twitter.com
+*.ads.facebook.com
+
+# Trackers
+google-analytics.com
+googletagmanager.com
+*.analytics.google.com
+facebook.com/tr
+connect.facebook.net
+*.scorecardresearch.com
+quantserve.com
+hotjar.com
+mouseflow.com
+*.newrelic.com
+segment.com
+mixpanel.com
+amplitude.com
+
+# Ad networks
+adform.net
+advertising.com
+admob.com
+inmobi.com
+mopub.com
+chartboost.com
+unity3d.com/ads
+applovin.com
+vungle.com
+
+# Malware/Tracking
+*.malware-example.com malware
+*.tracking-example.com tracker
