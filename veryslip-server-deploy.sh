@@ -265,27 +265,32 @@ clone_and_build() {
         SOURCE_DIR="./veryslip-server"
         cp -r "$SOURCE_DIR" "$INSTALL_DIR/" > /dev/null 2>&1
     else
-        # Clone from GitHub
+        # Clone from GitHub directly to final location
         log_info "Cloning from GitHub..."
         cd "$INSTALL_DIR"
-        if ! git clone --depth 1 --recurse-submodules https://github.com/jahani-moghaddam/veryslip.git veryslip-repo > /dev/null 2>&1; then
+        if ! git clone --depth 1 --recurse-submodules https://github.com/jahani-moghaddam/veryslip.git veryslip-temp > /dev/null 2>&1; then
             log_error "Failed to clone repository from GitHub"
             log_error "Please check your internet connection"
             exit 1
         fi
         
-        # Move veryslip-server to correct location
-        mv veryslip-repo/veryslip-server "$INSTALL_DIR/veryslip-server"
-        rm -rf veryslip-repo
+        # Move only veryslip-server with git metadata
+        mv veryslip-temp/veryslip-server "$INSTALL_DIR/veryslip-server"
+        rm -rf veryslip-temp
         log_info "Repository cloned successfully"
     fi
     
     cd "$INSTALL_DIR/veryslip-server"
     
-    # Initialize submodules if not already done
-    if [ ! -f vendor/picoquic/CMakeLists.txt ]; then
+    # Ensure submodules are initialized (needed if .git directory exists)
+    if [ -d .git ] && [ ! -f vendor/picoquic/CMakeLists.txt ]; then
         log_info "Initializing git submodules..."
-        git submodule update --init --recursive > /dev/null 2>&1 || true
+        git submodule update --init --recursive > /dev/null 2>&1
+    elif [ ! -f vendor/picoquic/CMakeLists.txt ]; then
+        # If no .git directory, clone picoquic directly
+        log_info "Cloning picoquic submodule..."
+        mkdir -p vendor
+        git clone --depth 1 https://github.com/Mygod/slipstream-picoquic vendor/picoquic > /dev/null 2>&1
     fi
     
     # Ensure cargo is in PATH
