@@ -282,15 +282,17 @@ clone_and_build() {
     
     cd "$INSTALL_DIR/veryslip-server"
     
-    # Ensure submodules are initialized (needed if .git directory exists)
-    if [ -d .git ] && [ ! -f vendor/picoquic/CMakeLists.txt ]; then
-        log_info "Initializing git submodules..."
-        git submodule update --init --recursive > /dev/null 2>&1
-    elif [ ! -f vendor/picoquic/CMakeLists.txt ]; then
-        # If no .git directory, clone picoquic directly
+    # Ensure picoquic submodule exists
+    if [ ! -f vendor/picoquic/CMakeLists.txt ]; then
         log_info "Cloning picoquic submodule..."
         mkdir -p vendor
-        git clone --depth 1 https://github.com/Mygod/slipstream-picoquic vendor/picoquic > /dev/null 2>&1
+        if ! git clone --depth 1 https://github.com/Mygod/slipstream-picoquic vendor/picoquic > /dev/null 2>&1; then
+            log_error "Failed to clone picoquic submodule"
+            exit 1
+        fi
+        log_info "Picoquic submodule cloned successfully"
+    else
+        log_info "Picoquic submodule already exists"
     fi
     
     # Ensure cargo is in PATH
