@@ -268,7 +268,7 @@ clone_and_build() {
         # Clone from GitHub
         log_info "Cloning from GitHub..."
         cd "$INSTALL_DIR"
-        if ! git clone --depth 1 https://github.com/jahani-moghaddam/veryslip.git veryslip-repo > /dev/null 2>&1; then
+        if ! git clone --depth 1 --recurse-submodules https://github.com/jahani-moghaddam/veryslip.git veryslip-repo > /dev/null 2>&1; then
             log_error "Failed to clone repository from GitHub"
             log_error "Please check your internet connection"
             exit 1
@@ -281,6 +281,12 @@ clone_and_build() {
     fi
     
     cd "$INSTALL_DIR/veryslip-server"
+    
+    # Initialize submodules if not already done
+    if [ ! -f vendor/picoquic/CMakeLists.txt ]; then
+        log_info "Initializing git submodules..."
+        git submodule update --init --recursive > /dev/null 2>&1 || true
+    fi
     
     # Ensure cargo is in PATH
     export PATH="$HOME/.cargo/bin:$PATH"
