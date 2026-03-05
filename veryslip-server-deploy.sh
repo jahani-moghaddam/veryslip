@@ -248,28 +248,36 @@ install_rust() {
 }
 
 clone_and_build() {
-    log_step "Building veryslip-server (5-10 minutes, please wait)..."
+    log_step "Downloading and building veryslip-server (5-10 minutes, please wait)..."
     
     # Create installation directory
     mkdir -p "$INSTALL_DIR"
     
-    # Determine source directory
+    # Check if source already exists locally
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     
-    # Check if veryslip-server directory exists
     if [ -d "$SCRIPT_DIR/veryslip-server" ]; then
+        log_info "Using local veryslip-server directory"
         SOURCE_DIR="$SCRIPT_DIR/veryslip-server"
-    elif [ -d "./veryslip-server" ]; then
-        SOURCE_DIR="./veryslip-server"
-    else
-        log_error "veryslip-server directory not found!"
-        log_error "Please ensure veryslip-server directory is in the same location as this script"
-        exit 1
-    fi
-    
-    # Copy source to installation directory
-    if [ "$SOURCE_DIR" != "$INSTALL_DIR/veryslip-server" ]; then
         cp -r "$SOURCE_DIR" "$INSTALL_DIR/" > /dev/null 2>&1
+    elif [ -d "./veryslip-server" ]; then
+        log_info "Using local veryslip-server directory"
+        SOURCE_DIR="./veryslip-server"
+        cp -r "$SOURCE_DIR" "$INSTALL_DIR/" > /dev/null 2>&1
+    else
+        # Clone from GitHub
+        log_info "Cloning from GitHub..."
+        cd "$INSTALL_DIR"
+        if ! git clone --depth 1 https://github.com/jahani-moghaddam/veryslip.git veryslip-repo > /dev/null 2>&1; then
+            log_error "Failed to clone repository from GitHub"
+            log_error "Please check your internet connection"
+            exit 1
+        fi
+        
+        # Move veryslip-server to correct location
+        mv veryslip-repo/veryslip-server "$INSTALL_DIR/veryslip-server"
+        rm -rf veryslip-repo
+        log_info "Repository cloned successfully"
     fi
     
     cd "$INSTALL_DIR/veryslip-server"
