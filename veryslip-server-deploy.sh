@@ -235,14 +235,19 @@ install_dependencies() {
 install_rust() {
     log_step "Installing Rust compiler..."
     
+    # Check if rustc exists for root
     if command -v rustc &> /dev/null; then
         log_info "Rust already installed ($(rustc --version))"
         return
     fi
     
-    # Install Rust silently
+    # Install Rust for root user
+    export RUSTUP_HOME=/root/.rustup
+    export CARGO_HOME=/root/.cargo
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y > /dev/null 2>&1
-    source "$HOME/.cargo/env"
+    
+    # Source cargo env
+    source /root/.cargo/env
     
     log_info "Rust installed ($(rustc --version))"
 }
@@ -295,11 +300,21 @@ clone_and_build() {
         log_info "Picoquic submodule already exists"
     fi
     
-    # Fix ownership to allow cargo to write to target directory
+    # Fix ownership and permissions
     chown -R root:root "$INSTALL_DIR/veryslip-server"
+    chmod -R u+rwX "$INSTALL_DIR/veryslip-server"
     
-    # Ensure cargo is in PATH
-    export PATH="$HOME/.cargo/bin:/root/.cargo/bin:$PATH"
+    # Ensure cargo is in PATH and using root's cargo
+    export RUSTUP_HOME=/root/.rustup
+    export CARGO_HOME=/root/.cargo
+    export PATH="/root/.cargo/bin:$PATH"
+    source /root/.cargo/env 2>/dev/null || true
+    
+    # Set environment variables for picoquic build
+    export PICOQUIC_AUTO_BUILD=1
+    
+    # Set umask to ensure new files are writable
+    umask 022
     
     # Build with progress indicator
     echo -n "  Building"
