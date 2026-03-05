@@ -273,7 +273,7 @@ clone_and_build() {
         # Clone from GitHub directly to final location
         log_info "Cloning from GitHub..."
         cd "$INSTALL_DIR"
-        if ! git clone --depth 1 --recurse-submodules https://github.com/jahani-moghaddam/veryslip.git veryslip-temp > /dev/null 2>&1; then
+        if ! git clone --depth 1 https://github.com/jahani-moghaddam/veryslip.git veryslip-temp > /dev/null 2>&1; then
             log_error "Failed to clone repository from GitHub"
             log_error "Please check your internet connection"
             exit 1
@@ -300,9 +300,15 @@ clone_and_build() {
         log_info "Picoquic submodule already exists"
     fi
     
-    # Fix ownership and permissions
+    # Fix ownership and permissions BEFORE building
     chown -R root:root "$INSTALL_DIR/veryslip-server"
-    chmod -R u+rwX "$INSTALL_DIR/veryslip-server"
+    find "$INSTALL_DIR/veryslip-server" -type d -exec chmod 755 {} \;
+    find "$INSTALL_DIR/veryslip-server" -type f -exec chmod 644 {} \;
+    
+    # Make scripts executable
+    if [ -d "$INSTALL_DIR/veryslip-server/scripts" ]; then
+        find "$INSTALL_DIR/veryslip-server/scripts" -type f -name "*.sh" -exec chmod 755 {} \;
+    fi
     
     # Ensure cargo is in PATH and using root's cargo
     export RUSTUP_HOME=/root/.rustup
@@ -310,18 +316,47 @@ clone_and_build() {
     export PATH="/root/.cargo/bin:$PATH"
     source /root/.cargo/env 2>/dev/null || true
     
-    # Set environment variables for picoquic build
-    export PICOQUIC_AUTO_BUILD=1
-    
     # Set umask to ensure new files are writable
     umask 022
     
+    # Pre-create .picoquic-build directory with correct permissions
+    # This is where the build script will compile picoquic
+    mkdir -p "$INSTALL_DIR/veryslip-server/.picoquic-build"
+    chown root:root "$INSTALL_DIR/veryslip-server/.picoquic-build"
+    chmod 755 "$INSTALL_DIR/veryslip-server/.picoquic-build"
+    
+    # Set environment variables for picoquic build
+    export PICOQUIC_DIR="$INSTALL_DIR/veryslip-server/vendor/picoquic"
+    export PICOQUIC_BUILD_DIR="$INSTALL_DIR/veryslip-server/.picoquic-build"
+    export PICOQUIC_AUTO_BUILD=1
+    
+    # Verify cmake is installed (required for picoquic build)
+    if ! command -v cmake &> /dev/null; then
+        log_error "cmake is required but not installed"
+        log_error "This should have been installed with dependencies"
+        exit 1
+    fi
+    
+    # Pre-build picoquic manually to avoid permission issues during cargo build
+    log_info "Pre-building picoquic dependencies..."
+    if ! bash "$INSTALL_DIR/veryslip-server/scripts/build_picoquic.sh" > /tmp/picoquic-build.log 2>&1; then
+        log_error "Picoquic build failed! Check /tmp/picoquic-build.log"
+        tail -20 /tmp/picoquic-build.log
+        exit 1
+    fi
+    
     # Build with progress indicator
-    echo -n "  Building"
+    echo -n "  Building Rust components"
+    
+    # Add verbose logging for debugging
+    export RUST_BACKTRACE=1
+    
     if ! cargo build --release > /tmp/veryslip-build.log 2>&1; then
         echo ""
         log_error "Build failed! Check /tmp/veryslip-build.log for details"
-        tail -20 /tmp/veryslip-build.log
+        echo ""
+        echo "Last 30 lines of build log:"
+        tail -30 /tmp/veryslip-build.log
         exit 1
     fi
     echo " ✓"
