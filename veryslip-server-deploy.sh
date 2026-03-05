@@ -295,8 +295,11 @@ clone_and_build() {
         log_info "Picoquic submodule already exists"
     fi
     
+    # Fix ownership to allow cargo to write to target directory
+    chown -R root:root "$INSTALL_DIR/veryslip-server"
+    
     # Ensure cargo is in PATH
-    export PATH="$HOME/.cargo/bin:$PATH"
+    export PATH="$HOME/.cargo/bin:/root/.cargo/bin:$PATH"
     
     # Build with progress indicator
     echo -n "  Building"
