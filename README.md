@@ -37,6 +37,7 @@ The script will:
 - Build the server (5-10 minutes)
 - Generate TLS certificates
 - Configure firewall and systemd service
+- Install tunnel backend (Dante SOCKS if selected)
 - Start the server automatically
 
 You only need to provide:

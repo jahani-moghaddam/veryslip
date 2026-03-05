@@ -142,6 +142,7 @@ The script will automatically:
 - ✓ Generate TLS certificates
 - ✓ Configure firewall
 - ✓ Set up systemd service
+- ✓ Install tunnel backend (Dante SOCKS if mode 1 selected)
 - ✓ Start the server
 
 ## What Gets Installed
@@ -187,33 +188,56 @@ This is why you need to configure NS records in your DNS settings - they tell th
 
 ## After Installation
 
-### 1. Set Up Your Tunnel Backend
+### 1. Verify Tunnel Backend
 
-Depending on the mode you selected:
+The script automatically sets up the tunnel backend based on your selection:
 
 **SOCKS Proxy (Mode 1):**
 ```bash
-# Install Dante SOCKS server
-sudo apt install dante-server
+# Dante SOCKS server is automatically installed and configured
+# Check status
+sudo systemctl status danted
 
-# Configure /etc/danted.conf
-# Start service
-sudo systemctl start danted
-sudo systemctl enable danted
+# View logs
+sudo journalctl -u danted -f
+
+# Verify it's listening on port 1080
+sudo netstat -tulpn | grep 1080
 ```
+
+The Dante configuration is at `/etc/danted.conf` and is pre-configured to:
+- Listen on 127.0.0.1:1080 (localhost only)
+- Accept connections from veryslip-server
+- Forward traffic through your primary network interface
 
 **SSH Mode (Mode 2):**
 ```bash
 # SSH server should already be running
 sudo systemctl status sshd
+
+# If not installed:
+sudo apt install openssh-server
+sudo systemctl start sshd
+sudo systemctl enable sshd
 ```
 
 **Shadowsocks (Mode 3):**
 ```bash
-# Install Shadowsocks
+# Install Shadowsocks manually
 sudo apt install shadowsocks-libev
 
 # Configure /etc/shadowsocks-libev/config.json
+sudo nano /etc/shadowsocks-libev/config.json
+
+# Example config:
+{
+    "server": "127.0.0.1",
+    "server_port": 8388,
+    "password": "your-password",
+    "method": "aes-256-gcm",
+    "timeout": 300
+}
+
 # Start service
 sudo systemctl start shadowsocks-libev
 sudo systemctl enable shadowsocks-libev
